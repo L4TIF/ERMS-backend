@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Project = require('../models/Project');
+const Assignment = require('../models/Assignment');
 
 // Get all projects
 router.get('/', async (req, res) => {
@@ -29,8 +30,11 @@ router.put('/:id', async (req, res) => {
 
 // Delete project
 router.delete('/:id', async (req, res) => {
-    await Project.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Project deleted' });
+    const projectId = req.params.id;
+    await Project.findByIdAndDelete(projectId);
+    // Cascade delete assignments for this project
+    await Assignment.deleteMany({ projectId });
+    res.json({ message: 'Project and related assignments deleted' });
 });
 
 module.exports = router; 

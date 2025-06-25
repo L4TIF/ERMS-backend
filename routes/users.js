@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const Assignment = require('../models/Assignment');
+const mongoose = require('mongoose');
 
 // Get all users
 router.get('/', async (req, res) => {
@@ -29,8 +31,11 @@ router.put('/:id', async (req, res) => {
 
 // Delete user
 router.delete('/:id', async (req, res) => {
-    await User.findByIdAndDelete(req.params.id);
-    res.json({ message: 'User deleted' });
+    const userId = req.params.id;
+    await User.findByIdAndDelete(userId);
+    // Cascade delete assignments for this engineer (ensure ObjectId match)
+    await Assignment.deleteMany({ engineerId: mongoose.Types.ObjectId(userId) });
+    res.json({ message: 'User and related assignments deleted' });
 });
 
 module.exports = router; 
